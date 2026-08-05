@@ -12,6 +12,7 @@ export const updateEntry = (id, formData) => axios.put(`${API_URL}/entries/${id}
 export const deleteEntry = (id) => axios.delete(`${API_URL}/entries/${id}`);
 export const getCategories = () => axios.get(`${API_URL}/categories`);
 
+//format the date to the locale date string
 export const formatDate = (date) =>
   date
     ? new Date(date).toLocaleDateString(undefined, {

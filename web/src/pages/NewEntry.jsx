@@ -6,7 +6,7 @@ export default function NewEntry() {
   //useNavigate to navigate to the home page
   const navigate = useNavigate();
 
-  //useState to store the categories
+  //useState to store and update the data
   const [categories, setCategories] = useState([]);
   const [title, setTitle] = useState("");
   const [reflection, setReflection] = useState("");

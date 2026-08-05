@@ -22,8 +22,10 @@ export default function Archive() {
 
   //useEffect to get the entries from the database
   useEffect(() => {
+    //get the entries from the database
     getEntries()
       .then((res) => setEntries(res.data))
+      //catch the error and set the error state
       .catch(() => setError("Couldn't load your moments. Is the server running?"));
   }, []);
 
@@ -33,6 +35,7 @@ export default function Archive() {
       ? []
       : selected === "all"
         ? entries
+        //filter the entries by the selected category
         : entries.filter((e) => e.category_id === selected);
 
   return (
@@ -86,6 +89,7 @@ export default function Archive() {
         {shown.map((entry) => (
           <li key={entry.id}>
             <article className="card">
+              {/* link to the entry */}
               <Link to={`/entry/${entry.id}`}>
                 {/* image */}
                 {entry.image && (
@@ -93,6 +97,7 @@ export default function Archive() {
                     src={imageUrl(entry.image)}
                     alt={`Photo for “${entry.title}”`}
                     loading="lazy"
+                    //onError to handle the error of the image not loading
                     onError={(e) => (e.currentTarget.style.display = "none")}
                   />
                 )}

@@ -8,23 +8,15 @@ export default function EditEntry() {
   //useNavigate to navigate to the home page
   const navigate = useNavigate();
 
-  //useState to store the categories
+  //useState to store and update the data
   const [categories, setCategories] = useState([]);
-  //useState to store the title
   const [title, setTitle] = useState("");
-  //useState to store the reflection
   const [reflection, setReflection] = useState("");
-  //useState to store the category id
   const [categoryId, setCategoryId] = useState("");
-  //useState to store the file
   const [file, setFile] = useState(null);
-  //useState to store the preview
   const [preview, setPreview] = useState(null);
-  //useState to store the existing image
   const [existingImage, setExistingImage] = useState(null);
-  //useState to store the error
   const [error, setError] = useState(null);
-  //useState to store the saving state
   const [saving, setSaving] = useState(false);
 
   //useEffect to get the categories from the database
@@ -38,11 +30,13 @@ export default function EditEntry() {
   useEffect(() => {
     getEntry(id)
       .then((res) => {
+        //set the data to the state
         setTitle(res.data.title);
         setReflection(res.data.reflection);
         setCategoryId(String(res.data.category_id));
         setExistingImage(res.data.image);
       })
+      //catch the error and set the error state
       .catch(() => setError("Couldn't load this moment."));
   }, [id]);
 
@@ -114,21 +108,9 @@ export default function EditEntry() {
               src={imageUrl(existingImage)}
               alt={`Current photo for “${title}”`}
             />
+
             {/* Preview image */}
             {/* if there is a preview image, show the preview image, otherwise show the dropzone */}
-            {preview ? (
-              <label className="preview-swap" htmlFor="image">
-                <img className="form-preview" src={preview} alt="Preview of your new photo" />
-                <span className="swap-hint">Choose a different photo</span>
-              </label>
-            ) : (
-              <label className="dropzone" htmlFor="image">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-                </svg>
-                Replace image
-              </label>
-            )}
           </div>
         ) : preview ? (
           <label className="preview-swap" htmlFor="image">
