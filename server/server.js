@@ -1,3 +1,6 @@
+//import dotenv for .env file
+require('dotenv').config();
+
 const express = require('express');
 const app = express();
 const mysql = require ('mysql2');
@@ -12,6 +15,7 @@ const db = require('./config/db');
 //import routes
 const categoriesRouter = require('./routes/categories');
 const entriesRouter = require('./routes/entries');
+const usersRouter = require("./routes/users");
 
 //run public folder before any other routes (absolute path so it works from any cwd)
 app.use(express.static(path.join(__dirname, 'public')));
@@ -41,7 +45,7 @@ app.use(cors(corsOptions));
 //use routes
 app.use('/categories', categoriesRouter);
 app.use('/entries', entriesRouter);
-
+app.use('/user', usersRouter);
 //handle 404 errors
 app.use('/',(req,res)=>{
   res.status(404).send("URL not found");
