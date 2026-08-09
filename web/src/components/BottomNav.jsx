@@ -17,13 +17,13 @@ export default function BottomNav() {
         Moments
       </NavLink>
 
-      {/* new moment link */}
-      <NavLink to="/new" className={navClass}>
+      {/* account link — new moments are still one tap away via the + button on the archive */}
+      <NavLink to="/sign-in" className={navClass}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
-          <path d="M12 8.5v7M8.5 12h7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+          <circle cx="12" cy="8.5" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
+          <path d="M5.5 19.5a6.5 6.5 0 0 1 13 0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
         </svg>
-        New
+        User
       </NavLink>
     </nav>
   );
