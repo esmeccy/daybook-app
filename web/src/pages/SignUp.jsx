@@ -1,129 +1,139 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { signUp } from "../api";
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-export default function SignUp() {
-  //useNavigate to send the new account to the sign in page
-  const navigate = useNavigate();
+function SignUp() {
+    const navigate = useNavigate();
+    // get the change of data
+    const [ formData, setFormData ] = useState({
+        username:'',
+        email:'',
+        password:'',
+        confirmPassword:'',
+    });
 
-  //useState to store and update the form data
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  //function to handle the form submission
-  async function handleSubmit(event) {
-    //prevent the default form submission
-    event.preventDefault();
-    setError(null);
-
-    //the server never sees the confirmation, so this one is checked here
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
+    // change data
+    const handleChange = (e) =>{
+        const {name, value} = e.target;
+        // make a copy of formdata, then change 'name' to 'value'
+        setFormData({...formData,[name]:value});
     }
 
-    setSubmitting(true);
+    //submit data
+    const handleSubmit = (e) => {
+        e.preventDefault();
 
-    try {
-      await signUp(username, email, password);
-      //sign-up returns no token, so the new account signs in on the next page
-      navigate("/sign-in");
-    } catch (err) {
-      //the server sends {errors:[{msg}]} for validation and duplicate emails, {message} for the rest
-      setError(
-        err.response?.data?.errors?.[0]?.msg ??
-          err.response?.data?.message ??
-          "Couldn't create your account. Is the server running?"
-      );
-      setSubmitting(false);
+        if(formData.password !== formData.confirmPassword){
+            alert("Passwords do not match");
+            return;
+        }
+
+        fetch("http://localhost:3000/user/sign-up",{
+            method: "POST",
+            headers:{
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                // the server requires a username as well, so it goes up with the rest
+                username: formData.username,
+                email:formData.email,
+                password: formData.password,
+            }),
+        })
+        .then((response) => response.json())
+        .then ((data) => {
+            if (data.errors){
+                //print the error
+                alert(data.errors[0].msg);
+                return;
+            }
+            console.log(data);
+            navigate("/sign-in")
+        })
+        //without this a stopped server leaves the form doing nothing at all
+        .catch(() => alert("Couldn't create your account. SERVER ERROR"));
     }
-  }
 
-  return (
-    //create the main container
-    <main>
-      {/* Page header */}
-      <header className="page-header center">
-        <h1>Create Account</h1>
-        <p className="tagline">Somewhere to keep your moments.</p>
-      </header>
+    return (
+        //create the main container
+        <main className='auth'>
+            {/* app name */}
+            <div className='brand'>Daybook</div>
 
-      {/* Error message */}
-      {error && <p className="notice">{error}</p>}
+            {/* Page header */}
+            <header className='page-header'>
+                <h1>Create Account</h1>
+                <p className='tagline'>Somewhere to keep your moments.</p>
+            </header>
 
-      {/* create the form */}
-      <form onSubmit={handleSubmit} className="entry-form">
-        {/* create the username field */}
-        <label htmlFor="username">Username</label>
-        <input
-          id="username"
-          type="text"
-          name="username"
-          placeholder="What should we call you?"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          autoComplete="username"
-          required
-        />
+            {/* create the form — the button lives outside it, linked back by id */}
+            <form id='sign-up-form' className='entry-form' onSubmit={handleSubmit}>
+                {/* create the username field */}
+                <label htmlFor='username'>Username</label>
+                <input
+                    type='text'
+                    id='username'
+                    name='username'
+                    placeholder='What should we call you?'
+                    value={formData.username}
+                    onChange={handleChange}
+                    autoComplete='username'
+                    required
+                />
 
-        {/* create the email field */}
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          name="email"
-          placeholder="signup@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-          required
-        />
+                {/* create the email field */}
+                <label htmlFor='email'>Email</label>
+                <input
+                    type='email'
+                    id='email'
+                    name='email'
+                    placeholder='signup@example.com'
+                    value={formData.email}
+                    onChange={handleChange}
+                    autoComplete='email'
+                    required
+                />
 
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          name="password"
-          placeholder="At least 8 characters"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="new-password"
-          required
-          minLength={8}
-        />
+                <label htmlFor='password'>Password</label>
+                <input
+                    type='password'
+                    id='password'
+                    name='password'
+                    placeholder='At least 8 characters'
+                    value={formData.password}
+                    onChange={handleChange}
+                    autoComplete='new-password'
+                    required
+                    minLength={8}
+                />
 
-        <label htmlFor="confirm-password">Confirm Password</label>
-        <input
-          id="confirm-password"
-          type="password"
-          name="confirmPassword"
-          placeholder="Re-enter your password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          autoComplete="new-password"
-          required
-          minLength={8}
-        />
+                <label htmlFor='confirm-password'>Confirm Password</label>
+                <input
+                    type='password'
+                    id='confirm-password'
+                    name='confirmPassword'
+                    placeholder='Re-enter your password'
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    autoComplete='new-password'
+                    required
+                    minLength={8}
+                />
 
-        {/* Register button */}
-        <button type="submit" className="button primary" disabled={submitting}>
-          {submitting ? "Creating…" : "Register"}
-          <span className="orb" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            </svg>
-          </span>
-        </button>
-      </form>
+            </form>
 
-      {/* link to the sign in page for people who already have an account */}
-      <p className="form-switch">
-        Already have an account? <Link to="/sign-in">Sign in</Link>
-      </p>
-    </main>
-  );
+            {/* link to the sign in page for people who already have an account */}
+            <p className='form-switch'>
+                Already have an account? <Link to='/sign-in'>Sign in</Link>
+            </p>
+
+            {/* Register button — sits at the bottom of the screen, still submits the form above */}
+            <div className='auth-actions'>
+                <button type='submit' form='sign-up-form' className='button primary'>
+                    Register
+                </button>
+            </div>
+        </main>
+    );
 }
+
+export default SignUp;

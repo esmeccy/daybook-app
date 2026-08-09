@@ -1,119 +1,121 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { signIn } from "../api";
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-export default function SignIn() {
-  //useNavigate to go back to the archive once signed in
-  const navigate = useNavigate();
+function SignIn({handleSignIn}) {
+    //get the navigate function
+    const navigate = useNavigate();
+    //get the form data
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+    });
 
-  //useState to store and update the form data
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  //the stored token is the only thing that says "signed in", so read it straight from storage
-  const [token, setToken] = useState(() => localStorage.getItem("token"));
-
-  //function to handle the form submission
-  async function handleSubmit(event) {
-    //prevent the default form submission
-    event.preventDefault();
-    setSubmitting(true);
-    setError(null);
-
-    try {
-      const res = await signIn(email, password);
-      //keep the token so every later request can send it (see the interceptor in api.js)
-      localStorage.setItem("token", res.data.token);
-      navigate("/");
-    } catch (err) {
-      //the server sends {message} for bad credentials and {errors:[{msg}]} for validation
-      setError(
-        err.response?.data?.message ??
-          err.response?.data?.errors?.[0]?.msg ??
-          "Couldn't sign in. Is the server running?"
-      );
-      setSubmitting(false);
+    //handle change to update the form data
+    const handleChange = (e) =>{
+        const { name, value } = e.target;
+        setFormData({...formData, [name]: value });
     }
-  }
 
-  //function to sign out by throwing the token away
-  function handleSignOut() {
-    localStorage.removeItem("token");
-    setToken(null);
-  }
+    //handle submit to sign in
+    const handleSubmit = (e) => {
+        e.preventDefault();
 
-  //if already signed in, this tab is just a way back out
-  if (token) {
+        //fetch the data from the server
+        fetch("http://localhost:3000/user/sign-in",{
+            method: "POST",
+            headers:{
+                "Content-Type": "application/json",
+            },
+            //send the form data to the server
+            body: JSON.stringify({
+                email:formData.email,
+                password: formData.password,
+            }),
+        })
+        //get the response from the server
+        .then((response) => response.json())
+        //if there is an error, print the error
+        .then ((data) => {
+            if (data.errors){
+                //print the error
+                alert(data.errors[0].msg);
+                return;
+            }
+            //if there is no token, print the error
+            if (!data.token){
+                alert(data.message || "Invalid email or password");
+                return;
+            }
+
+            //keep the token so every later request can send it
+            localStorage.setItem('token', data.token);
+            //and the name and email, for the greeting and the profile page
+            localStorage.setItem('username', data.username || '');
+            localStorage.setItem('email', data.email || '');
+            //navigate to the home page
+            handleSignIn();
+        })
+        .catch(() => alert("Couldn't sign in. SERVER ERROR"));
+    }
+
     return (
-      <main>
-        <header className="page-header center">
-          <h1>Your account</h1>
-          <p className="tagline">You're signed in.</p>
-        </header>
+        //create the main container
+        <main className='auth'>
+            {/* app name */}
+            <div className='brand'>Daybook</div>
 
-        <div className="notice">
-          <button type="button" className="button" onClick={handleSignOut}>
-            Sign out
-          </button>
-        </div>
-      </main>
+            {/* Page header */}
+            <header className='page-header'>
+                <h1>Welcome back</h1>
+                <p className='tagline'>Sign in to see your moments.</p>
+            </header>
+
+            {/* create the form — the button lives outside it, linked back by id */}
+            <form
+            id='sign-in-form'
+            className='entry-form'
+            onSubmit={handleSubmit}
+            >
+                {/* create the email field */}
+                <label htmlFor='email'>Email</label>
+                <input
+                    type='email'
+                    id='email'
+                    name='email'
+                    placeholder='you@example.com'
+                    value={formData.email}
+                    onChange={handleChange}
+                    autoComplete='email'
+                    required
+                />
+
+                <label htmlFor='password'>Password</label>
+                <input
+                    type='password'
+                    id='password'
+                    name='password'
+                    placeholder='Your password'
+                    value={formData.password}
+                    onChange={handleChange}
+                    autoComplete='current-password'
+                    required
+                />
+
+            </form>
+
+            {/* link to the sign up page for people who don't have an account yet */}
+            <p className='form-switch'>
+                New here? <Link to='/sign-up'>Create an account</Link>
+            </p>
+
+            {/* Sign in button — sits at the bottom of the screen, still submits the form above */}
+            <div className='auth-actions'>
+                <button type='submit' form='sign-in-form' className='button primary'>
+                    Sign in
+                </button>
+            </div>
+        </main>
     );
-  }
-
-  return (
-    <main>
-      {/* Page header */}
-      <header className="page-header center">
-        <h1>Welcome back</h1>
-        <p className="tagline">Sign in to see your moments.</p>
-      </header>
-
-      {/* Error message */}
-      {error && <p className="notice">{error}</p>}
-
-      {/* Sign in form */}
-      <form onSubmit={handleSubmit} className="entry-form">
-        {/* Email input */}
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@example.com"
-          autoComplete="email"
-          required
-        />
-
-        {/* Password input */}
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Your password"
-          autoComplete="current-password"
-          required
-        />
-
-        {/* Sign in button */}
-        <button type="submit" className="button primary" disabled={submitting}>
-          {submitting ? "Signing in…" : "Sign in"}
-          <span className="orb" aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            </svg>
-          </span>
-        </button>
-      </form>
-
-      {/* link to the sign up page for people who don't have an account yet */}
-      <p className="form-switch">
-        New here? <Link to="/sign-up">Create an account</Link>
-      </p>
-    </main>
-  );
 }
+
+export default SignIn;

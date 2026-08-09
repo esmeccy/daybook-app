@@ -112,20 +112,8 @@ export default function NewEntry() {
           maxLength={100}
           required
         />
-
-        {/* Reflection input */}
-        <label htmlFor="reflection">Reflection<span className="req" aria-hidden="true"> *</span></label>
-        <textarea
-          id="reflection"
-          value={reflection}
-          onChange={(e) => setReflection(e.target.value)}
-          placeholder="A sentence or two is plenty…"
-          rows={5}
-          required
-        />
-
         {/* Category input */}
-        <label htmlFor="category">Category<span className="req" aria-hidden="true"> *</span></label>
+        <label htmlFor="category">Category</label>
         <select
           id="category"
           value={categoryId}
@@ -138,6 +126,17 @@ export default function NewEntry() {
             <option key={cat.id} value={cat.id}>{cat.name}</option>
           ))}
         </select>
+
+        {/* Reflection input */}
+        <label htmlFor="reflection">Reflection<span className="req" aria-hidden="true"> *</span></label>
+        <textarea
+          id="reflection"
+          value={reflection}
+          onChange={(e) => setReflection(e.target.value)}
+          placeholder="A sentence or two is plenty…"
+          rows={5}
+          required
+        />
 
         {/* Save button */}
         <button type="submit" className="button primary" disabled={saving}>

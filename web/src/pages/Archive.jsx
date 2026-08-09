@@ -40,10 +40,19 @@ export default function Archive() {
 
   return (
     <main>
-      {/* Page header */}
-      <header className="page-header">
-        <h1>Daybook</h1>
-        <p className="tagline">One small moment at a time.</p>
+      {/* Page header — greeting on the left, the new-moment button on the right */}
+      <header className="page-header header-row">
+        <div>
+          <h1>Hi {localStorage.getItem("username") || "there"}!</h1>
+          <p className="tagline">One small moment at a time.</p>
+        </div>
+
+        {/* Capture a new moment button */}
+        <Link to="/new" className="fab" aria-label="Capture a new moment">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </Link>
       </header>
 
       {/* CategoryFilter component */}
@@ -116,13 +125,6 @@ export default function Archive() {
           </li>
         ))}
       </ul>
-
-      {/* Capture a new moment button */}
-      <Link to="/new" className="fab" aria-label="Capture a new moment">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-      </Link>
     </main>
   );
 }

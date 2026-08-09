@@ -18,12 +18,12 @@ export default function BottomNav() {
       </NavLink>
 
       {/* account link — new moments are still one tap away via the + button on the archive */}
-      <NavLink to="/sign-in" className={navClass}>
+      <NavLink to="/profile" className={navClass}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="8.5" r="3.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
           <path d="M5.5 19.5a6.5 6.5 0 0 1 13 0" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
         </svg>
-        User
+        Profile
       </NavLink>
     </nav>
   );

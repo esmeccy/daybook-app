@@ -125,7 +125,10 @@ usersRouter.post("/sign-in",
         // return the token
         res.status(200).json({
             message:"Login successful",
-            token:token
+            token:token,
+            // the profile page shows these, and the token only carries the id
+            username: user.username,
+            email: user.email
         });
     });
 });

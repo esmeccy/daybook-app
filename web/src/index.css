@@ -112,6 +112,19 @@ main {
   font-size: clamp(2.4rem, 7vw, 3.75rem);
 }
 
+/* header with an action alongside it — text left, button right */
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.header-row .fab {
+  position: static;
+  flex-shrink: 0;
+}
+
 .tagline {
   margin: 0.75rem 0 0;
   color: var(--muted);
@@ -140,6 +153,10 @@ main {
 .form-switch a {
   color: var(--ink);
   font-weight: 600;
+  /* 44px tap target, same trick as .back-link */
+  display: inline-block;
+  min-height: 50px;
+  line-height: 50px;
 }
 
 /* ---- Category filter chips ---- */
@@ -334,10 +351,83 @@ time {
   padding-bottom: 1.75rem;
 }
 
+/* ---- Profile ---- */
+
+.profile-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: 0 0 0 1px var(--hairline), 0 1px 2px rgb(58 61 66 / 0.03);
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 2rem 1.75rem;
+  text-align: center;
+  animation: rise 0.8s var(--ease) both;
+}
+
+.avatar {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 84px;
+}
+
+.profile-card h2 {
+  font-size: 1.5rem;
+}
+
+.profile-email {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin: 1.75rem 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--hairline);
+}
+
+.stat-row div + div {
+  border-left: 1px solid var(--hairline);
+}
+
+.stat-row dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stat-row dd {
+  margin: 0.35rem 0 0;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+/* lines up with the card above it */
+.profile-actions {
+  display: flex;
+  max-width: 520px;
+  margin: 1.5rem auto 0;
+}
+
+.profile-actions .button {
+  width: 100%;
+}
+
 /* ---- Buttons ---- */
 
 .button {
-  min-height: 48px;
+  min-height: 50px;
   padding: 0.65rem 1.6rem;
   border: none;
   border-radius: 999px;
@@ -384,26 +474,6 @@ time {
   transform: none;
 }
 
-/* button-in-button trailing orb */
-.orb {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: rgb(255 255 255 / 0.18);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.45s var(--ease);
-}
-
-.orb svg {
-  width: 15px;
-  height: 15px;
-}
-
-.button:hover .orb {
-  transform: translate(2px, -1px) scale(1.05);
-}
 
 /* ---- Delete confirmation dialog ---- */
 
@@ -578,6 +648,76 @@ time {
 .entry-form .button {
   margin-top: 1.5rem;
   align-self: center;
+}
+
+/* ---- Auth screens: app shell — brand up top, action pinned to the bottom ---- */
+
+.auth {
+  min-height: 100dvh;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  /* no bottom nav on these screens, so the nav clearance isn't wanted */
+  padding-bottom: calc(env(safe-area-inset-bottom) + 1.25rem);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.brand::before {
+  content: "";
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: var(--accent);
+  box-shadow: inset 0 -6px 10px rgb(255 255 255 / 0.22);
+}
+
+.auth .page-header {
+  margin: 2rem 0 1.75rem;
+  text-align: center;
+}
+
+.auth .page-header h1 {
+  font-size: clamp(2.1rem, 8vw, 2.75rem);
+}
+
+/* no card here — the fields sit straight on the background and run full width.
+   the auto margin has to go: an auto cross-axis margin stops a flex item stretching */
+.auth .entry-form {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  max-width: none;
+  margin: 0;
+}
+
+/* the card is gone, so the fields carry the surface colour themselves */
+.auth .entry-form input {
+  background: var(--surface);
+  min-height: 58px;
+  font-size: 1.05rem;
+  padding: 0.9rem 1.15rem;
+}
+
+/* pushes the button to the bottom of the screen, however tall the form is */
+.auth-actions {
+  margin-top: auto;
+  padding-top: 2rem;
+}
+
+.auth-actions .button {
+  width: 100%;
+  /* .primary trims the right padding for the orb, which this button doesn't have */
+  padding-right: 1.6rem;
 }
 
 /* ---- Floating pill navigation ---- */
