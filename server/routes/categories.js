@@ -2,6 +2,12 @@ const express = require('express');
 const categoriesRouter = express.Router();
 const db = require("../config/db");
 
+const authenticateToken = require("../auth");
+
+//categories are only ever used to fill in the form on a protected page,
+//so there is no reason to hand the list out to someone who isn't signed in
+categoriesRouter.use(authenticateToken);
+
 //get all categories
 categoriesRouter.get ("/",(req,res)=>{
   //sort categories alphabetically
