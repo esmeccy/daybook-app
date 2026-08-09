@@ -9,6 +9,24 @@ axios.interceptors.request.use((config) => {
   return config;
 });
 
+// tokens expire after an hour. without this the app still sees a token in localStorage
+// and shows the UI, but every request comes back 403 and it just looks broken.
+// 401 and 403 only ever come from the auth middleware, so either one means the session is dead.
+// the sign-in and sign-up forms use fetch, not axios, so a wrong password never lands here.
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+    if (status === 401 || status === 403) {
+      // localStorage only holds the token, username, and email, so clearing it is the whole sign-out
+      localStorage.clear();
+      // a full reload instead of navigate(), so no stale signed-in state survives anywhere in the tree
+      window.location.assign("/sign-in");
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const imageUrl = (filename) =>
   `${API_URL}/uploads/${encodeURIComponent(filename.trim())}`;
 
