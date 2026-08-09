@@ -1,7 +1,13 @@
 const express = require("express");
 const entriesRouter = express.Router();
+
 const db = require("../config/db");
 const upload = require("../config/storage");
+
+const authenticateToken = require("../auth");
+
+// use the authenticateToken middleware to protect the routes
+entriesRouter.use(authenticateToken);
 
 // Get all Daybook entries
 entriesRouter.get("/", (req, res) => {
@@ -11,10 +17,13 @@ entriesRouter.get("/", (req, res) => {
     ec_categories.name AS category
     FROM ec_entries
     JOIN ec_categories
-    ON ec_entries.category_id = ec_categories.id
+    ON ec_entries.category_id = ec_categories.id  
+    WHERE ec_entries.user_id = ?
     ORDER BY created_at DESC`;
 
-    db.query(sql, (err, result) => {
+    // get the user id from the request object
+    const userId = req.user.userId;
+    db.query(sql, [userId], (err, result) => {
 
       if (err) {
         //log error for human readability
@@ -38,9 +47,9 @@ ec_categories.name AS category
 FROM ec_entries
 JOIN ec_categories 
 ON ec_entries.category_id = ec_categories.id
-WHERE ec_entries.id = ?`;
-//query database
-db.query(sql, [id], (err, result) => {
+WHERE ec_entries.id = ? AND ec_entries.user_id = ?`;
+//query database, scoped to the signed-in user so nobody can read someone else's entry
+db.query(sql, [id, req.user.userId], (err, result) => {
   if (err) {
     //log error for human readability
       console.error(err);
@@ -73,6 +82,7 @@ function missingFields(body) {
 // Add a new entry
 entriesRouter.post("/", upload.single("image"),
 (req, res) => {
+
   const { title, reflection, category_id } = req.body;
   const image = req.file ? req.file.filename : null;
 
@@ -86,11 +96,11 @@ entriesRouter.post("/", upload.single("image"),
   //insert new entry into database
   const sql = `
       INSERT INTO ec_entries
-      (title, reflection, image, category_id, created_at)
-      VALUES (?, ?, ?, ?, NOW())`;
+      (title, reflection, image, category_id, user_id, created_at)
+      VALUES (?, ?, ?, ?,?, NOW())`;
 
   //create an array of query parameters
-    const queryParams = [title, reflection, image, category_id];
+    const queryParams = [title, reflection, image, category_id, req.user.userId];
 
   //query database
   db.query(sql, queryParams, (err, result) => {
@@ -139,8 +149,9 @@ entriesRouter.put("/:id", upload.single("image"), (req, res) => {
     queryParams.push(req.file.filename);
   }
 
-  sql += " WHERE id = ?";
-  queryParams.push(id);
+  //user_id in the WHERE clause means another user's entry simply matches nothing
+  sql += " WHERE id = ? AND user_id = ?";
+  queryParams.push(id, req.user.userId);
 
   //update the entry in the database
   db.query(sql, queryParams, (err, result) => {
@@ -150,6 +161,12 @@ entriesRouter.put("/:id", upload.single("image"), (req, res) => {
               return res.status(500).json({
                 error: "Error updating entry:" + err.message
               });
+          }
+          //no rows matched = wrong id, or the entry belongs to someone else
+          if (result.affectedRows === 0) {
+            return res.status(404).json({
+              message: "Entry not found."
+            });
           }
           //return success message
           res.json({
@@ -166,15 +183,21 @@ entriesRouter.delete("/:id", (req, res) => {
   const id = req.params.id;
   //create the sql query
   const sql = `DELETE FROM ec_entries
-  WHERE id = ?
+  WHERE id = ? AND user_id = ?
   LIMIT 1`;
   //query the database
-  db.query(sql, [id], (err, result) => {
+  db.query(sql, [id, req.user.userId], (err, result) => {
     //if there is an error, return a 500 error
       if (err) {
           console.error(err);
           return res.status(500).send
           ('Error deleting entry:' + err.message);
+      }
+      //no rows matched = wrong id, or the entry belongs to someone else
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          message: "Entry not found."
+        });
       }
       //return success message
       res.json({
