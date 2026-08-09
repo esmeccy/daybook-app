@@ -129,6 +129,19 @@ main {
   margin-top: 1rem;
 }
 
+/* the link between the sign in and sign up forms */
+.form-switch {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 1.25rem 0 0;
+}
+
+.form-switch a {
+  color: var(--ink);
+  font-weight: 600;
+}
+
 /* ---- Category filter chips ---- */
 
 .chip-row {

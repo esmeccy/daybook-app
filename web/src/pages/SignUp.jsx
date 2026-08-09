@@ -1,111 +1,129 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { signUp } from "../api";
 
-function SignUp() {
-    const navigate = useNavigate();
+export default function SignUp() {
+  //useNavigate to send the new account to the sign in page
+  const navigate = useNavigate();
 
-    //use state to store the email and password
-    const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    confirmPassword: "",
-    });
-    
-    //handle change to update the form data
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
-    //handle submit to sign up
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        //if the password and confirm password do not match, set message
-        if (formData.password !== formData.confirmPassword) {
-            setMessage("Passwords do not match.");
-            return;
-        }
+  //useState to store and update the form data
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  //function to handle the form submission
+  async function handleSubmit(event) {
+    //prevent the default form submission
+    event.preventDefault();
+    setError(null);
+
+    //the server never sees the confirmation, so this one is checked here
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
     }
 
-    fetch("http://localhost:3000/user/",{
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            email:formData.email, 
-            password:formData.password,
-        }),
-    })
-    .then ((response) => response.json())
-    .then ((data) => {
-        if (data.error) {
-            alert(data.error[0].msg);
-            return;
-        }
-        console.log(data);
-        navigate("/sign-in");
-    });
+    setSubmitting(true);
+
+    try {
+      await signUp(username, email, password);
+      //sign-up returns no token, so the new account signs in on the next page
+      navigate("/sign-in");
+    } catch (err) {
+      //the server sends {errors:[{msg}]} for validation and duplicate emails, {message} for the rest
+      setError(
+        err.response?.data?.errors?.[0]?.msg ??
+          err.response?.data?.message ??
+          "Couldn't create your account. Is the server running?"
+      );
+      setSubmitting(false);
+    }
+  }
 
   return (
     //create the main container
     <main>
-      <h1>Create Account</h1>
+      {/* Page header */}
+      <header className="page-header center">
+        <h1>Create Account</h1>
+        <p className="tagline">Somewhere to keep your moments.</p>
+      </header>
+
+      {/* Error message */}
+      {error && <p className="notice">{error}</p>}
 
       {/* create the form */}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="entry-form">
+        {/* create the username field */}
+        <label htmlFor="username">Username</label>
+        <input
+          id="username"
+          type="text"
+          name="username"
+          placeholder="What should we call you?"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          autoComplete="username"
+          required
+        />
+
         {/* create the email field */}
-        <div>
-          <label htmlFor="email">Email</label>
+        <label htmlFor="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          name="email"
+          placeholder="signup@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          required
+        />
 
-          <input
-            id="email"
-            type="email"
-            name="email"
-            placeholder="signup@example.com"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
+        <label htmlFor="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          name="password"
+          placeholder="At least 8 characters"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="new-password"
+          required
+          minLength={8}
+        />
 
-        <div>
-          <label htmlFor="password">Password</label>
+        <label htmlFor="confirm-password">Confirm Password</label>
+        <input
+          id="confirm-password"
+          type="password"
+          name="confirmPassword"
+          placeholder="Re-enter your password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          autoComplete="new-password"
+          required
+          minLength={8}
+        />
 
-          <input
-            id="password"
-            type="password"
-            name="password"
-            placeholder="Enter your password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            minLength={8}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="confirm-password">Confirm Password</label>
-
-          <input
-            id="confirm-password"
-            type="password"
-            name="confirmPassword"
-            placeholder="Re-enter your password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-            minLength={8}
-          />
-        </div>
-
-        <input 
-        type="submit" 
-        value="Register"
-        onClick={handleSubmit} />
+        {/* Register button */}
+        <button type="submit" className="button primary" disabled={submitting}>
+          {submitting ? "Creating…" : "Register"}
+          <span className="orb" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M7 17 17 7M9 7h8v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            </svg>
+          </span>
+        </button>
       </form>
 
-      {message && <p>{message}</p>}
+      {/* link to the sign in page for people who already have an account */}
+      <p className="form-switch">
+        Already have an account? <Link to="/sign-in">Sign in</Link>
+      </p>
     </main>
   );
 }
-export default SignUp;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { signIn } from "../api";
 
 export default function SignIn() {
@@ -109,6 +109,11 @@ export default function SignIn() {
           </span>
         </button>
       </form>
+
+      {/* link to the sign up page for people who don't have an account yet */}
+      <p className="form-switch">
+        New here? <Link to="/sign-up">Create an account</Link>
+      </p>
     </main>
   );
 }

@@ -5,7 +5,8 @@ import NewEntry from "./pages/NewEntry";
 import EditEntry from "./pages/EditEntry";
 import BottomNav from "./components/BottomNav";
 import SignIn from "./pages/SignIn";
-// SignUp/Home aren't routed yet — re-import them when they are
+import SignUp from "./pages/SignUp";
+// Home isn't routed yet — re-import it when it is
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/new" element={<NewEntry />} />
         <Route path="/edit/:id" element={<EditEntry />} />
         <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-up" element={<SignUp />} />
       </Routes>
       <BottomNav />
     </>
